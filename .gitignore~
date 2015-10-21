@@ -1,0 +1,7 @@
+$ cat .gitignore
+.idea
+*.pyc
+.project
+.pydevproject
+/docs
+/sphinx-docs
