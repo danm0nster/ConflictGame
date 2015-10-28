@@ -6,3 +6,4 @@ $ cat .gitignore
 /docs
 /sphinx-docs
 /nodebox
+/pyglet
