@@ -3,32 +3,34 @@ import layout
 import player
 import math
 
-players = [player.Player('a'), player.Player('b'), player.Player('c'), player.Player('d')]
+players = [player.Player('a'), player.Player('b'), player.Player('c'), player.Player('d'), player.Player('a'), player.Player('b'), player.Player('c'), player.Player('d'), player.Player('a'), player.Player('b'), player.Player('c'), player.Player('d')]
 layout_helper = layout.LayoutHelper()
+
 
 def draw(canvas):
     canvas.clear()
     layout_helper.set_player_position(players)
     for player in players:
         push()
-        strokewidth(2)
+        strokewidth(1)
         stroke(0, 1)
         fill(1, 1)
-        translate(50, 50)
         player.draw_self()
         nofill()
         pop()
     push()
-    line(canvas.width - 200, 0, canvas.width - 200, canvas.height)
+    layout_helper.draw_right_margin(right_margin=200.0)
     nostroke()
     layout_helper.draw_timer(0, 10)
-    translate(75, 75)
-    layout_helper.draw_arrow(players[0].position[0], players[0].position[1], players[1].position[0], players[1].position[1])
-    layout_helper.draw_arrow(players[2].position[0], players[2].position[1], players[3].position[0], players[3].position[1])
-    layout_helper.draw_arrow(players[1].position[0], players[1].position[1], players[2].position[0], players[2].position[1])
-    layout_helper.draw_arrow(players[3].position[0], players[3].position[1], players[0].position[0], players[0].position[1])
-    layout_helper.draw_arrow(players[0].position[0], players[0].position[1], players[1].position[0], players[1].position[1])
-    layout_helper.draw_arrow(players[0].position[0], players[0].position[1], players[2].position[0], players[2].position[1])
+    #layout_helper.draw_arrow(players[0], players[1])
+    #layout_helper.draw_arrow(players[3], players[0])
+    #layout_helper.draw_arrow(players[3], players[1])
+    layout_helper.draw_arrow(players[2], players[3])
+    #layout_helper.draw_arrow(players[1], players[2])
+    #layout_helper.draw_arrow(players[1], players[3])
+    #layout_helper.draw_arrow(players[0], players[2])
+    #layout_helper.draw_arrow(players[2], players[0])
+    layout_helper.draw_expected_payout(130)
     pop()
 
 

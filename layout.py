@@ -3,13 +3,17 @@ import math
 
 
 class LayoutHelper:
-    def __init__(self):
+    def __init__(self, edge_margin=50.0):
         # right margin for timer, expected payout and text, this makes "the main window" smaller by same amount
         # might need to be a calculated thing, but 200px for now
-        self.right_margin = 200.0
+        self.right_margin = 0.0
         # margin from edges in px
-        self.edge_margin = 50.0
+        self.edge_margin = edge_margin
         self.counter = 0
+
+    def draw_right_margin(self, right_margin=200.0):
+        self.right_margin = right_margin
+        line(canvas.width - self.right_margin, 0, canvas.width - self.right_margin, canvas.height)
 
     def calculate_radius(self, padding):
         """ Calculates largest possible circle radius
@@ -49,14 +53,12 @@ class LayoutHelper:
         radius = self.calculate_radius(self.edge_margin)
         for player in player_list:
             angle_radians = math.radians(angle)
-            origin_x = (canvas.width-self.right_margin)/2.0 - 25
-            origin_y = canvas.height/2.0 - 25
+            origin_x = (canvas.width-self.right_margin)/2.0 - player.img.width / 2.0
+            origin_y = canvas.height/2.0 - player.img.height / 2.0
             # x = originX + radius * cos(a)
-            # TODO the 25 is half the drawing size of rect, needs changing
-            x = origin_x + radius * math.cos(angle_radians) - self.edge_margin
+            x = origin_x + radius * math.cos(angle_radians)
             # y = originY + radius * sin(a)
-            # TODO the 25 is half the drawing size of rect, needs changing
-            y = origin_y + radius * math.sin(angle_radians) - self.edge_margin
+            y = origin_y + radius * math.sin(angle_radians)
             player.img.x = x
             player.img.y = y
             player.position = (x, y)
@@ -92,7 +94,111 @@ class LayoutHelper:
         image(img)
         pop()
 
-    def draw_arrow(self, x0, y0, x1, y1):
+    def draw_arrow(self, player0, player1):
+        """ Draws an arrow from a player to another player
+
+        Args:
+            player0 (Player): The player the arrow originates from
+            player1 (Player): The player the arrow will go to
+        """
         push()
-        line(x0, y0, x1, y1)
+        strokewidth(2)
+        x0 = round(player0.position[0])
+        y0 = round(player0.position[1])
+        x1 = round(player1.position[0])
+        y1 = round(player1.position[1])
+
+        player0_anchor = []
+        player1_anchor = []
+        # find anchor points
+        # goes from player0's corner to a mid point on player1
+        if x0 > x1:
+            # arrow going from east to west
+            if y0 > y1:
+                # arrow going SW
+                player0_anchor.append(x0)
+                player0_anchor.append(y0)
+                player1_anchor.append(x1 + player1.img.width)
+                player1_anchor.append(y1 + player1.img.height * 0.5)
+
+            elif y1 > y0:
+                # arrow going NW
+                player0_anchor.append(x0)
+                player0_anchor.append(y0 + player0.img.height)
+                player1_anchor.append(x1 + player1.img.width * 0.5)
+                player1_anchor.append(y1)
+            elif y0 == y1:
+                # W
+                player0_anchor.append(x0)
+                player0_anchor.append(y0)
+                player1_anchor.append(x1 + player1.img.width)
+                player1_anchor.append(y1 + player1.img.height * 0.5)
+
+        elif x0 < x1:
+            # arrow going from west to East
+            if y0 > y1:
+                # SE
+                player0_anchor.append(x0 + player0.img.width)
+                player0_anchor.append(y0)
+                player1_anchor.append(x1 + player1.img.width * 0.5)
+                player1_anchor.append(y1 + player1.img.height)
+            elif y1 > y0:
+                # NE
+                player0_anchor.append(x0 + player0.img.width)
+                player0_anchor.append(y0 + player0.img.height)
+                player1_anchor.append(x1)
+                player1_anchor.append(y1 + player1.img.height * 0.5)
+
+            elif y0 == y1:
+                # E
+                player0_anchor.append(x0 + player0.img.width)
+                player0_anchor.append(y0)
+                player1_anchor.append(x1)
+                player1_anchor.append(y1 + player1.img.height * 0.5)
+        else:
+            # going strictly north or south
+            if y0 > y1:
+                # South
+                player0_anchor.append(x0)
+                player0_anchor.append(y0)
+                player1_anchor.append(x1 + player1.img.width * 0.5)
+                player1_anchor.append(y1 + player1.img.height)
+            else:
+                # North
+                player0_anchor.append(x0 + player0.img.width)
+                player0_anchor.append(y0 + player0.img.height)
+                player1_anchor.append(x1 + player1.img.width * 0.5)
+                player1_anchor.append(y1)
+        
+        line(player0_anchor[0], player0_anchor[1], player1_anchor[0], player1_anchor[1])
+
+        # making arrow heads
+        dx = player1_anchor[0] - player0_anchor[0]
+        dy = player1_anchor[1] - player0_anchor[1]
+        angle_radians = math.atan2(dy, dx)
+        degrees = math.degrees(angle_radians)
+        # rotating to match the line
+        #rotate(degrees)
+        fill(0, 1)
+        # x = startX + length * cos(angle)
+        # y = startY + length * sin(angle)
+        triangle1_x = player1_anchor[0] + 10 * math.cos(math.radians(-180 + degrees + 20))
+        triangle1_y = player1_anchor[1] + 10 * math.sin(math.radians(-180 + degrees + 20))
+        triangle2_x = player1_anchor[0] + 10 * math.cos(math.radians(-180 + degrees - 20))
+        triangle2_y = player1_anchor[1] + 10 * math.sin(math.radians(-180 + degrees - 20))
+        triangle(player1_anchor[0], player1_anchor[1], triangle1_x, triangle1_y, triangle2_x, triangle2_y)
+
+
+        pop()
+
+    def draw_expected_payout(self, expected_pay, padding=10):
+        padding = padding
+        push()
+        txt = Text("Expected payout: " + str(expected_pay) + "kr.",
+                   x=canvas.width - self.right_margin + padding,
+                   y=canvas.height-self.edge_margin,
+                   width=self.right_margin - 2*padding,
+                   height=10)
+        txt.style(0, len(txt.text), fill=Color(0, 0, 0), align=RIGHT)
+        text(txt)
         pop()
