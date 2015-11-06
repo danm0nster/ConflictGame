@@ -1,18 +1,19 @@
 from nodebox.graphics import *
+from nodebox.gui import *
 import math
 
 
 class LayoutHelper:
-    def __init__(self, edge_margin=50.0):
+    def __init__(self, edge_margin=50.0, right_margin=200.0):
         # right margin for timer, expected payout and text, this makes "the main window" smaller by same amount
         # might need to be a calculated thing, but 200px for now
-        self.right_margin = 0.0
+        self.right_margin = right_margin
         # margin from edges in px
         self.edge_margin = edge_margin
         self.counter = 0
 
-    def draw_right_margin(self, right_margin=200.0):
-        self.right_margin = right_margin
+    def draw_right_margin(self):
+        self.right_margin
         line(canvas.width - self.right_margin, 0, canvas.width - self.right_margin, canvas.height)
 
     def calculate_radius(self, padding):
@@ -177,18 +178,15 @@ class LayoutHelper:
         dy = player1_anchor[1] - player0_anchor[1]
         angle_radians = math.atan2(dy, dx)
         degrees = math.degrees(angle_radians)
-        # rotating to match the line
-        #rotate(degrees)
         fill(0, 1)
         # x = startX + length * cos(angle)
         # y = startY + length * sin(angle)
+        # -180 degrees is from atan
         triangle1_x = player1_anchor[0] + 10 * math.cos(math.radians(-180 + degrees + 20))
         triangle1_y = player1_anchor[1] + 10 * math.sin(math.radians(-180 + degrees + 20))
         triangle2_x = player1_anchor[0] + 10 * math.cos(math.radians(-180 + degrees - 20))
         triangle2_y = player1_anchor[1] + 10 * math.sin(math.radians(-180 + degrees - 20))
         triangle(player1_anchor[0], player1_anchor[1], triangle1_x, triangle1_y, triangle2_x, triangle2_y)
-
-
         pop()
 
     def draw_expected_payout(self, expected_pay, padding=10):
@@ -202,3 +200,18 @@ class LayoutHelper:
         txt.style(0, len(txt.text), fill=Color(0, 0, 0), align=RIGHT)
         text(txt)
         pop()
+
+    def draw_start_stop_button(self, caption, action=None, padding=10):
+        # TODO on y, the 10 is from the timer, should not be static
+        button = Button(caption=caption,
+                        action=action,
+                        x=canvas.width - self.right_margin + padding,
+                        y=self.edge_margin + 10 + padding,
+                        width=self.right_margin - 2 * padding,
+                        id='start_stop_button')
+        canvas.append(button)
+
+    def change_start_stop_text(self, value):
+        for item in canvas:
+            if item.id == 'start_stop_button':
+                item.caption = value

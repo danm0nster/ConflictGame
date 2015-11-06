@@ -1,2 +1,0 @@
-from nodebox.graphics import *
-

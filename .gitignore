@@ -3,7 +3,9 @@ $ cat .gitignore
 *.pyc
 .project
 .pydevproject
+NetworkingClient.py
 /docs
 /sphinx-docs
 /nodebox
 /pyglet
+/xmpp
