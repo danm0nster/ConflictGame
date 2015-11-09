@@ -1,7 +1,6 @@
 from nodebox.graphics import *
 from server_service import ServerService
 from layout import LayoutHelper
-from time import time
 from NetworkingClient import NetworkingClient
 from NetworkingClient import Message
 from player import Player
@@ -29,26 +28,29 @@ def message_handler():
     while msg is not None:
         # new player registers
         if msg.subject[:8] == 'register':
-            service.player_list.append(Player(name=msg.sender))
-            #all_players = []
-            #player_names = ''
-            #for player in service.player_list:
-            #    all_players.append(player.name)
-            #    player_names = '::' + player_names + player.name
-            #network.send_mass_messages(all_players, service.server_jid, message=player_names, subject="update")
-
-
+            service.player_list.append(Player(name=str(msg.sender)))
 
         # msg handling above here
         msg = network.pop_message()
 
 
 def start_stop_button_action(button):
-    if service.started:
-        layout.change_start_stop_text('Start')
-    else:
-        layout.change_start_stop_text('Stop')
     service.started = not service.started
+    if service.started:
+        layout.change_start_stop_text('Stop')
+    else:
+        layout.change_start_stop_text('Start')
+
+    if service.started:
+        all_players = []
+        player_names = ''
+        for player in service.player_list:
+            all_players.append(player.name)
+            # inserting :: as a message delimiter
+            player_names = player_names + '::' + player.name
+        # sends list of all players to all participants
+        network.send_mass_messages(all_players, service.server_jid, message=player_names, subject="start")
+
 
 if __name__ == "__main__":
     service = ServerService()

@@ -7,13 +7,15 @@ class ClientService(object):
         # TODO change player list to property?
         self.player_list = []
         # TODO cfg file import of username and other configs?
+        # TODO split into common service? username + clicked_player
         self._MAX_TIME = 5
-        self._USERNAME = 'test1'
+        self._USERNAME = 'test2'
         self._DOMAIN = 'YLGW036484'
         self._SECRET = "1234"
         self._SERVER_NAME = "server"
         self.latest_time_tick = None
         self._started = False
+        self._clicked_player = None
 
 
     @property
@@ -75,14 +77,29 @@ class ClientService(object):
             self._started = value
 
     def elapsed_time(self):
+        # Start the timer
         if not self.started:
             self.latest_time_tick = None
             return 0
+        # sets the first timer
         if self.latest_time_tick is None:
             self.latest_time_tick = time.time()
             return 0
+        # if there is a previous timer check elapsed time
         else:
             elapsed_time = time.time() - self.latest_time_tick
+            # if elapsed_time is larger than the maximum time, reset timer
             if elapsed_time >= self.max_time:
                 self.latest_time_tick = time.time()
             return elapsed_time
+
+    @property
+    def clicked_player(self):
+        return self._clicked_player
+
+    @clicked_player.setter
+    def clicked_player(self, player):
+        if self._clicked_player is None:
+            self._clicked_player = player
+        if player is None and self._clicked_player is not None:
+            self._clicked_player = player
