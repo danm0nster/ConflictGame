@@ -7,9 +7,9 @@ from player import Player
 
 
 def draw(canvas):
+    # Checks for network messages and handles them
     if network.check_for_messages():
         message_handler()
-    canvas.clear()
     layout.set_player_position(service.player_list)
     push()
     strokewidth(1)
@@ -18,9 +18,23 @@ def draw(canvas):
     for player in service.player_list:
         player.draw_self()
     layout.draw_right_margin()
-    layout.draw_timer(service.elapsed_time(), service.max_time)
+    # timer handling
+    if service.started:
+        current_timer = service.elapsed_time()
+        layout.draw_timer(current_timer, service.max_time)
+        # if turn over reset clicked player
+        if current_timer >= service.max_time:
+            canvas.clear()
+            network.send_mass_messages(service.player_name_list(),
+                                       service.server_jid,
+                                       message=service.generate_attack_string(),
+                                       subject='round_result')
+            service.flush_attacks()
+            network.send_mass_messages(service.player_name_list(),
+                                       service.server_jid,
+                                       message='',
+                                       subject='new_round')
     pop()
-    # TODO draw timer
 
 
 def message_handler():
@@ -28,8 +42,15 @@ def message_handler():
     while msg is not None:
         # new player registers
         if msg.subject[:8] == 'register':
-            service.player_list.append(Player(name=str(msg.sender)))
-
+            # TODO service or network method to remove jid?
+            player_name = msg.sender.getStripped()
+            service.player_list.append(Player(name=str(player_name)))
+        if msg.subject[:8] == 'attacked':
+            players = msg.body.split('::')
+            player0 = service.find_player(players[0])
+            player1 = service.find_player(players[1])
+            service.add_attack(player0, player1)
+            layout.draw_arrow(player0, player1)
         # msg handling above here
         msg = network.pop_message()
 
@@ -42,14 +63,12 @@ def start_stop_button_action(button):
         layout.change_start_stop_text('Start')
 
     if service.started:
-        all_players = []
         player_names = ''
         for player in service.player_list:
-            all_players.append(player.name)
-            # inserting :: as a message delimiter
+            # TODO inserting :: as a message delimiter
             player_names = player_names + '::' + player.name
         # sends list of all players to all participants
-        network.send_mass_messages(all_players, service.server_jid, message=player_names, subject="start")
+        network.send_mass_messages(service.player_name_list(), service.server_jid, message=player_names, subject="start")
 
 
 if __name__ == "__main__":

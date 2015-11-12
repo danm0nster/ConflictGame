@@ -3,9 +3,11 @@ from layout import LayoutHelper
 from player import Player
 from client_service import ClientService
 from NetworkingClient import NetworkingClient
+from time import time
 
 
 def draw(canvas):
+    # Checks for network messages and handles them
     if network.check_for_messages():
         message_handler()
     canvas.clear()
@@ -17,21 +19,35 @@ def draw(canvas):
     for player in service.player_list:
         player.draw_self()
     layout.draw_right_margin()
-    nostroke()
+    if service.previous_round is not None:
+        # drawing previous attacks on the board
+        for key in service.previous_round:
+            push()
+            strokewidth(0.5)
+            stroke(0.5, 0.5, 0.5, 0.5)
+            # checks if the iteration is at your attack
+            if key != service.find_self().name:
+                # if user haven't chosen a target to attack yet, draw the previous attack
+                if service.clicked_player is None:
+                    layout.draw_arrow(service.find_player(key), service.find_player(service.previous_round[key]))
+                else:
+                    # if the user attacks a different target than the previous round, draw the previous attack
+                    if service.find_player(service.previous_round[key]).name != service.clicked_player.name:
+                        layout.draw_arrow(service.find_player(key), service.find_player(service.previous_round[key]))
+            else:
+                # draw previous round attack for current player
+                layout.draw_arrow(service.find_player(key), service.find_player(service.previous_round[key]))
+            pop()
+    if service.clicked_player is not None:
+        push()
+        strokewidth(1)
+        stroke(0, 1)
+        layout.draw_arrow(service.find_self(), service.clicked_player)
+        pop()
+    # timer
     if service.started:
         current_timer = service.elapsed_time()
         layout.draw_timer(current_timer, service.max_time)
-        # if turn over reset clicked player
-        if current_timer >= service.max_time:
-            service.clicked_player = None
-    #layout_helper.draw_arrow(players[0], players[1])
-    #layout_helper.draw_arrow(players[3], players[0])
-    #layout_helper.draw_arrow(players[3], players[1])
-    #layout_helper.draw_arrow(players[2], players[3])
-    #layout_helper.draw_arrow(players[1], players[2])
-    #layout_helper.draw_arrow(players[1], players[3])
-    #layout_helper.draw_arrow(players[0], players[2])
-    #layout_helper.draw_arrow(players[2], players[0])
     layout.draw_expected_payout(130)
     pop()
 
@@ -53,15 +69,38 @@ def message_handler():
             for p in service.player_list:
                 print p.name
 
+        if msg.subject[:12] == 'round_result':
+            # split the message into a dict of attacks
+            attacks = msg.body.split('::')
+            attack_dict = {}
+            # TODO counter starts at one since first entry will be empty
+            counter = 1
+            # recreate the attack dictionary from the server
+            while counter < len(attacks) - 1:
+                attack_dict[attacks[counter]] = attacks[counter+1]
+                counter = counter + 1
+            service.previous_round = attack_dict
+
+        if msg.subject[:9] == 'new_round':
+            service.clicked_player = None
+            service.latest_time_tick = time()
+
         # go to next message
         msg = network.pop_message()
 
 
 def on_mouse_press(canvas, mouse):
+    # finds what player was clicked
     for player in service.player_list:
         if player.position[0] <= mouse.x <= (player.position[0] + player.img.width):
             if player.position[1] <= mouse.y <= (player.position[1] + player.img.height):
-                service.clicked_player = player
+                myself = service.find_self()
+                if player.name != myself.name:
+                    service.clicked_player = player
+                    layout.draw_arrow(myself, player)
+                    msg = myself.name + "::" + player.name
+                    # informs the server of the attack
+                    network.send_message(to=service.server_jid, sender=service.jid, message=msg, subject="attacked")
                 # TODO remove test print
                 print 'clicked on player: ' + player.name
                 if service.clicked_player is not None:

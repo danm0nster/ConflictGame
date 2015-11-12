@@ -7,16 +7,17 @@ class ClientService(object):
         # TODO change player list to property?
         self.player_list = []
         # TODO cfg file import of username and other configs?
-        # TODO split into common service? username + clicked_player
-        self._MAX_TIME = 5
-        self._USERNAME = 'test2'
+        # TODO split into common service? username + clicked_player + find_self
+        # TODO maybe include previous round into the split, depending on server handling
+        self._MAX_TIME = 8
+        self._USERNAME = 'test1'
         self._DOMAIN = 'YLGW036484'
         self._SECRET = "1234"
         self._SERVER_NAME = "server"
         self.latest_time_tick = None
         self._started = False
         self._clicked_player = None
-
+        self.previous_round = None
 
     @property
     def max_time(self):
@@ -44,7 +45,7 @@ class ClientService(object):
 
     @property
     def jid(self):
-        return self.username + "@" + self.domain
+        return self.username + "@" + self.domain.lower()
 
     @property
     def server_jid(self):
@@ -90,7 +91,7 @@ class ClientService(object):
             elapsed_time = time.time() - self.latest_time_tick
             # if elapsed_time is larger than the maximum time, reset timer
             if elapsed_time >= self.max_time:
-                self.latest_time_tick = time.time()
+                self.latest_time_tick = self.max_time
             return elapsed_time
 
     @property
@@ -103,3 +104,13 @@ class ClientService(object):
             self._clicked_player = player
         if player is None and self._clicked_player is not None:
             self._clicked_player = player
+
+    def find_player(self, name):
+        for index in range(0, len(self.player_list)):
+            if self.player_list[index].name == name:
+                return self.player_list[index]
+
+    def find_self(self):
+        for index in range(0, len(self.player_list)):
+            if self.player_list[index].name == self.jid:
+                return self.player_list[index]
