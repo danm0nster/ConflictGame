@@ -3,7 +3,7 @@ from layout import LayoutHelper
 from player import Player
 from client_service import ClientService
 from NetworkingClient import NetworkingClient
-from time import time
+from time import time, sleep
 
 
 def draw(canvas):
@@ -20,22 +20,22 @@ def draw(canvas):
         player.draw_self()
     layout.draw_right_margin()
     if service.previous_round is not None:
-        # drawing previous attacks on the board
+        # iterating through previous attacks
         for key in service.previous_round:
             push()
             strokewidth(0.5)
             stroke(0.5, 0.5, 0.5, 0.5)
             # checks if the iteration is at your attack
             if key != service.find_self().name:
-                # if user haven't chosen a target to attack yet, draw the previous attack
+                # if you haven't chosen a target to attack yet, draw your the previous attack
                 if service.clicked_player is None:
                     layout.draw_arrow(service.find_player(key), service.find_player(service.previous_round[key]))
                 else:
-                    # if the user attacks a different target than the previous round, draw the previous attack
+                    # if you attack a different target than in the previous round, draw your previous attack
                     if service.find_player(service.previous_round[key]).name != service.clicked_player.name:
                         layout.draw_arrow(service.find_player(key), service.find_player(service.previous_round[key]))
             else:
-                # draw previous round attack for current player
+                # draw a users previous attack
                 layout.draw_arrow(service.find_player(key), service.find_player(service.previous_round[key]))
             pop()
     if service.clicked_player is not None:
@@ -110,7 +110,7 @@ def on_mouse_press(canvas, mouse):
 
 
 def on_key_press(canvas, keyboard):
-    print "pressed a key"
+    pass
 
 if __name__ == "__main__":
     layout = LayoutHelper()
@@ -129,4 +129,9 @@ if __name__ == "__main__":
     canvas.on_mouse_press = on_mouse_press
     canvas.fps = 30
     canvas.fullscreen = False
+    # deleting offline messages
+    # need to have a very little delay so that it will receive them before it start drawing
+    sleep(0.2)
+    while network.check_for_messages():
+        network.pop_message()
     canvas.run(draw)

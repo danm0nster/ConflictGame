@@ -198,6 +198,8 @@ class LayoutHelper:
                    width=self.right_margin - 2*padding,
                    height=10)
         txt.style(0, len(txt.text), fill=Color(0, 0, 0), align=RIGHT)
+        txt.fontname = "Droid Sans"
+        txt.fontsize = 11
         text(txt)
         pop()
 

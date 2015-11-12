@@ -2,7 +2,7 @@ from nodebox.graphics import *
 from server_service import ServerService
 from layout import LayoutHelper
 from NetworkingClient import NetworkingClient
-from NetworkingClient import Message
+from time import sleep
 from player import Player
 
 
@@ -68,7 +68,10 @@ def start_stop_button_action(button):
             # TODO inserting :: as a message delimiter
             player_names = player_names + '::' + player.name
         # sends list of all players to all participants
-        network.send_mass_messages(service.player_name_list(), service.server_jid, message=player_names, subject="start")
+        network.send_mass_messages(service.player_name_list(),
+                                   service.server_jid,
+                                   message=player_names,
+                                   subject="start")
 
 
 if __name__ == "__main__":
@@ -88,6 +91,11 @@ if __name__ == "__main__":
         layout.draw_start_stop_button('Stop', action=start_stop_button_action)
     else:
         layout.draw_start_stop_button('Start', action=start_stop_button_action)
+    # deleting offline messages
+    # need to have a very little delay so that it will receive them before it start drawing
+    sleep(0.2)
+    while network.check_for_messages():
+        network.pop_message()
     canvas.run(draw)
 
 
