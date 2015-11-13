@@ -75,6 +75,8 @@ class LayoutHelper:
         """
         length = self.right_margin - 2 * padding
         elapsed_length = (float(elapsed_time)/float(max_time)) * length
+        if elapsed_length > length:
+            elapsed_length = length
 
         # drawing the borders
         push()

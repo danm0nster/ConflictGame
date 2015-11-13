@@ -17,7 +17,10 @@ def draw(canvas):
     nofill()
     layout.set_player_position(service.player_list)
     for player in service.player_list:
-        player.draw_self()
+        if player.name == service.find_self().name:
+            player.draw_self(highlight=True)
+        else:
+            player.draw_self()
     layout.draw_right_margin()
     if service.previous_round is not None:
         # iterating through previous attacks
