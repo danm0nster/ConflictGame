@@ -6,13 +6,18 @@ import math
 class LayoutHelper:
     def __init__(self, edge_margin=50.0, right_margin=200.0):
         # right margin for timer, expected payout and text, this makes "the main window" smaller by same amount
-        # might need to be a calculated thing, but 200px for now
+        # TODO might need to be a calculated thing, but 200px for now
         self.right_margin = right_margin
         # margin from edges in px
         self.edge_margin = edge_margin
         self.counter = 0
 
     def draw_right_margin(self):
+        """ Draws the right margin of th screen
+
+        The right margin is used for information, this method draws the divider
+
+        """
         self.right_margin
         line(canvas.width - self.right_margin, 0, canvas.width - self.right_margin, canvas.height)
 
@@ -192,6 +197,15 @@ class LayoutHelper:
         pop()
 
     def draw_expected_payout(self, expected_pay, padding=10):
+        """ Draws the expected payout to the screen
+
+        Draws the expected payout to the top right of the screen, centering it to the right.
+        Adds padding to both sides of the text
+
+        Args:
+            expected_pay (float): Current expected pay
+            padding (int): padding around the sides, defaults to 10
+        """
         padding = padding
         push()
         txt = Text("Expected payout: " + str(expected_pay) + "kr.",
@@ -206,6 +220,14 @@ class LayoutHelper:
         pop()
 
     def draw_start_stop_button(self, caption, action=None, padding=10):
+        # TODO lav generisk
+        """ Draws the start/stop button to the screen
+
+        Args:
+            caption (string): The text on the button
+            action (function): What function to call when pressed, defaults to None
+            padding (int): padding around the sides, defaults to 10
+        """
         # TODO on y, the 10 is from the timer, should not be static
         button = Button(caption=caption,
                         action=action,
@@ -216,6 +238,12 @@ class LayoutHelper:
         canvas.append(button)
 
     def change_start_stop_text(self, value):
+        # TODO lav generisk
+        """ Changes the caption on the start/stop button
+
+        Args:
+            value (string): new caption for the button
+        """
         for item in canvas:
             if item.id == 'start_stop_button':
                 item.caption = value

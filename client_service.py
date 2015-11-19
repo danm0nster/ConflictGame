@@ -9,12 +9,12 @@ class ClientService(object):
         # TODO cfg file import of username and other configs?
         # TODO split into common service? username + clicked_player + find_self
         # TODO maybe include previous round into the split, depending on server handling
-        self._MAX_TIME = 8
-        self._USERNAME = 'test1'
+        self._MAX_TIME = 6
+        self._USERNAME = 'test2'
         self._DOMAIN = 'YLGW036484'
         self._SECRET = "1234"
         self._SERVER_NAME = "server"
-        self.latest_time_tick = None
+        self.timestamp = None
         self._started = False
         self._clicked_player = None
         self.previous_round = None
@@ -78,20 +78,32 @@ class ClientService(object):
             self._started = value
 
     def elapsed_time(self):
-        # Start the timer
+        """ Finds the delta in time since the last timestamp
+
+        If the game is not started it resets timestamp to None and returns 0.
+        If the game is started but the timestamp is None, make the first timestamp to the current time.
+        Otherwise it will return the amount of time since the timestamp in seconds.
+
+        Returns:
+            int: if the game is not started it returns 0
+            int: if the game is started but no timestamp exist, create one and return 0
+            float: returns the time since the timestamp in seconds
+
+        """
+        # reset timer if game is not started
         if not self.started:
-            self.latest_time_tick = None
+            self.timestamp = None
             return 0
         # sets the first timer
-        if self.latest_time_tick is None:
-            self.latest_time_tick = time.time()
+        if self.timestamp is None:
+            self.timestamp = time.time()
             return 0
         # if there is a previous timer check elapsed time
         else:
-            elapsed_time = time.time() - self.latest_time_tick
+            elapsed_time = time.time() - self.timestamp
             # if elapsed_time is larger than the maximum time, reset timer
             if elapsed_time >= self.max_time:
-                self.latest_time_tick = self.max_time
+                self.timestamp = self.max_time
             return elapsed_time
 
     @property
@@ -106,11 +118,26 @@ class ClientService(object):
             self._clicked_player = player
 
     def find_player(self, name):
+        """ Searches the list of players for a given name
+
+        Returns the first instance where a player has the given name.
+
+        Args:
+            name (string): the name of the player you want to find
+
+        Returns:
+            Player: the Player object with the given name
+        """
         for index in range(0, len(self.player_list)):
             if self.player_list[index].name == name:
                 return self.player_list[index]
 
     def find_self(self):
+        """ Find yourself from the player list
+
+        Return:
+            Player: the Player of yourself.
+        """
         for index in range(0, len(self.player_list)):
             if self.player_list[index].name == self.jid:
                 return self.player_list[index]

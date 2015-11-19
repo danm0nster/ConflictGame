@@ -43,8 +43,10 @@ def message_handler():
         # new player registers
         if msg.subject[:8] == 'register':
             # TODO service or network method to remove jid?
-            player_name = msg.sender.getStripped()
-            service.player_list.append(Player(name=str(player_name)))
+            if not service.started:
+                player_name = msg.sender.getStripped()
+                service.player_list.append(Player(name=str(player_name)))
+
         if msg.subject[:8] == 'attacked':
             players = msg.body.split('::')
             player0 = service.find_player(players[0])
@@ -59,6 +61,8 @@ def start_stop_button_action(button):
     service.started = not service.started
     if service.started:
         layout.change_start_stop_text('Stop')
+        # resets aggression matrix when stop button is pressed
+        service.aggression_matrix = None
     else:
         layout.change_start_stop_text('Start')
 
@@ -72,6 +76,7 @@ def start_stop_button_action(button):
                                    service.server_jid,
                                    message=player_names,
                                    subject="start")
+        service.generate_aggression_matrix()
 
 
 if __name__ == "__main__":

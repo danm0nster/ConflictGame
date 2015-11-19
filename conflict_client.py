@@ -86,7 +86,7 @@ def message_handler():
 
         if msg.subject[:9] == 'new_round':
             service.clicked_player = None
-            service.latest_time_tick = time()
+            service.timestamp = time()
 
         # go to next message
         msg = network.pop_message()
@@ -120,6 +120,7 @@ if __name__ == "__main__":
     service = ClientService()
     network = NetworkingClient(service.domain)
     con = network.connect()
+    # TODO should inverse both con and auth so that the program stops if either is None
     if con is not None:
         # TODO logging
         auth = network.authenticate(username=service.username, domain=service.domain, secret=service.secret)
