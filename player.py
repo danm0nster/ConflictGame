@@ -21,7 +21,3 @@ class Player:
                  strokewidth=2)
         image(self.img)
         pop()
-
-    # TODO delete this
-    #def get_height(self):
-    #    return self.img.height

@@ -1,6 +1,7 @@
 from player import Player
 from client_service import ClientService
 from time import time
+from scipy.linalg import eig
 import numpy
 
 
@@ -10,8 +11,10 @@ class ServerService(ClientService):
         self.database = self.DatabaseManager()
         self.username = "server"
         self._attack_dict = {}
-        self.aggression_matrix = None
-        self.cumulative_matrix = None
+        self._aggression_matrix = None
+        self._cumulative_matrix = None
+        self._transition_matrix = None
+        self._eigen_vector = None
 
     def add_attack(self, player0, player1):
         # Only add the attack if that player doesn't have a registered attack yet
@@ -19,12 +22,13 @@ class ServerService(ClientService):
             self._attack_dict[player0] = player1
 
     def flush_attacks(self):
-        self.aggression_matrix = self.generate_aggression_matrix()
-        self.add_to_cumulative_matrix(self.aggression_matrix)
+        self._aggression_matrix = self.generate_aggression_matrix()
+        self.add_to_cumulative_matrix(self._aggression_matrix)
+        self._transition_matrix = self.calculate_transition_matrix(self._cumulative_matrix)
+        self._eigen_vector = self.get_eigen_vector_from_largest_eigen_value(self._transition_matrix)
         # TODO remove test print
-        print 'aggression matrix: ', self.aggression_matrix
-        print 'cumulative atrix: ', self.cumulative_matrix
-        # TODO add data saving, temporarely will just clean that dict
+        print self._eigen_vector
+        # TODO add data saving, temporarily will just clean that dict
         self._attack_dict = {}
 
     def player_name_list(self):
@@ -87,18 +91,54 @@ class ServerService(ClientService):
         return temp_array
 
     def add_to_cumulative_matrix(self, aggression_matrix):
-        if aggression_matrix is not None and self.cumulative_matrix is not None:
-            self.cumulative_matrix = numpy.add(aggression_matrix, self.cumulative_matrix)
+        if aggression_matrix is not None and self._cumulative_matrix is not None:
+            self._cumulative_matrix = numpy.add(aggression_matrix, self._cumulative_matrix)
         else:
-            self.cumulative_matrix = aggression_matrix
+            self._cumulative_matrix = aggression_matrix
+
+    def calculate_transition_matrix(self, cumulative_matrix):
+        # makes a self.player_list x self.player_list sized matrix
+        temp_array = [0] * len(self.player_list)
+        for entry in range(0, len(temp_array)):
+            temp_array[entry] = [0] * len(self.player_list)
+
+        # getting as small as possible epsilon value given pythons default float as type
+        epsilon = numpy.finfo(1.0).eps
+
+        # The mathematical formula in latex form
+        # T_{ij} = \dfrac{a_{ij} + \epsilon}{\sum\limits_{n=1}^n=(a_{ik} + \epsilon}
+        for i in range(0, len(temp_array)):
+            for j in range(0, len(temp_array[i])):
+                numerator = cumulative_matrix[i][j] + epsilon
+                divisor = 0
+                # for every spot calculate the sum of each element in the column i + epsilon for each element
+                for k in cumulative_matrix[i]:
+                    divisor = divisor + k + epsilon
+                temp_array[i][j] = numerator / divisor
+        return temp_array
+
+    def get_eigen_vector_from_largest_eigen_value(self, transition_matrix):
+        eigen_results = eig(transition_matrix)
+        eigen_values = eigen_results[0]
+        eigen_vectors = eigen_results[1]
+
+        largest_eigen_index = None
+        distance_from_0 = 0
+        # finds the index of the eigen value with the largest absolute distance from 0
+        for index in range(0, len(eigen_values)):
+            if abs(eigen_values[index]) > distance_from_0:
+                largest_eigen_index = index
+                distance_from_0 = abs(eigen_values[index])
+
+        return eigen_vectors[largest_eigen_index]
 
     class DatabaseManager(object):
         def __init__(self):
             try:
-                file = open('db_settings.ini', 'r')
-                lines = file.readlines()
-                # for each relevant line, it checks it the formatting is appropiate
-                # it does this by substringing the line and checking the value vs the expected value
+                db_file = open('db_settings.ini', 'r')
+                lines = db_file.readlines()
+                # for each relevant line, it checks it the formatting is appropriate
+                # it does this by sub stringing the line and checking the value vs the expected value
                 # if it's wrong it raises an exception saying that the db_settings file is malformed
                 if lines[0][:5] != 'user=':
                     raise IOError('db_settings malformed')

@@ -102,16 +102,3 @@ if __name__ == "__main__":
     while network.check_for_messages():
         network.pop_message()
     canvas.run(draw)
-
-
-    # TODO delete scratchpad below
-    #var1 = ClientService()
-    #var2 = ServerService()
-
-    #print var2.username
-    #print "changing var 1"
-    #var1.username = "kurt"
-    #print "var 1 is: " + var1.username
-    #print "var 2 is:" + var2.username
-    #print "var 2 time: " + str(var2.max_time)
-    #print "" + str(var2.player_list)
