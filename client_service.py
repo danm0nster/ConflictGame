@@ -1,4 +1,4 @@
-from player import Player
+# -*- coding: utf-8 -*-
 import time
 
 
@@ -10,7 +10,7 @@ class ClientService(object):
         # TODO split into common service? username + clicked_player + find_self
         # TODO maybe include previous round into the split, depending on server handling
         self._MAX_TIME = 6
-        self._USERNAME = 'test2'
+        self._USERNAME = 'test1'
         self._DOMAIN = 'YLGW036484'
         self._SECRET = "1234"
         self._SERVER_NAME = "server"
@@ -18,6 +18,7 @@ class ClientService(object):
         self._started = False
         self._clicked_player = None
         self.previous_round = None
+        self.version = 0.5
 
     @property
     def max_time(self):
@@ -31,17 +32,9 @@ class ClientService(object):
     def username(self):
         return self._USERNAME
 
-    @username.setter
-    def username(self, username):
-        self._USERNAME = username
-
     @property
     def domain(self):
         return self._DOMAIN
-
-    @domain.setter
-    def domain(self, domain):
-        self._DOMAIN = domain
 
     @property
     def jid(self):
@@ -54,10 +47,6 @@ class ClientService(object):
     @property
     def secret(self):
         return self._SECRET
-
-    @secret.setter
-    def secret(self, secret):
-        self._SECRET = secret
 
     @property
     def server_name(self):
@@ -91,6 +80,7 @@ class ClientService(object):
 
         """
         # reset timer if game is not started
+        # TODO tjek om et virker hvis return type altid er float
         if not self.started:
             self.timestamp = None
             return 0

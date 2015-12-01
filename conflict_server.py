@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from nodebox.graphics import *
 from server_service import ServerService
 from layout import LayoutHelper
@@ -58,10 +59,12 @@ def message_handler():
 
 
 def start_stop_button_action(button):
+    # first it changes if it's started or not
     service.started = not service.started
+    # Then takes appropriate actions
     if service.started:
         layout.change_start_stop_text('Stop')
-        # resets aggression matrix when stop button is pressed
+        # resets aggression matrix when starting
         service.aggression_matrix = None
     else:
         layout.change_start_stop_text('Start')
@@ -77,6 +80,12 @@ def start_stop_button_action(button):
                                    message=player_names,
                                    subject="start")
         service.generate_aggression_matrix()
+        service.database.start_experimental_session("x", "x", "Dan Mønster", service.server_version)
+        service.insert_session(service.experimental_round, game_phase=True)
+        service.start_game_phase()
+        service.register_jids()
+    else:
+        service.end_game_phase()
 
 
 if __name__ == "__main__":
@@ -84,12 +93,11 @@ if __name__ == "__main__":
     layout = LayoutHelper()
     network = NetworkingClient(service.domain)
     con = network.connect()
-    if con is not None:
-        # TODO logging
-        auth = network.authenticate(username=service.username, domain=service.domain, secret=service.secret)
-        if auth is not None:
-            # TODO logging
-            pass
+    if con is None:
+        raise RuntimeError('Can\'t connect to the network')
+    auth = network.authenticate(username=service.username, domain=service.domain, secret=service.secret)
+    if auth is None:
+        raise RuntimeError('Can\'t authenticate with given username and password')
     canvas.fps = 30
     canvas.fullscreen = False
     if service.started:
@@ -97,7 +105,7 @@ if __name__ == "__main__":
     else:
         layout.draw_start_stop_button('Start', action=start_stop_button_action)
     # deleting offline messages
-    # need to have a very little delay so that it will receive them before it start drawing
+    # need to have a small delay so that it will receive them before it start drawing
     sleep(0.2)
     while network.check_for_messages():
         network.pop_message()

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from nodebox.graphics import *
 from layout import LayoutHelper
 from player import Player
@@ -68,9 +69,6 @@ def message_handler():
                     new_player = Player(name=name)
                     service.player_list.append(new_player)
             service.started = True
-            # TODO remove test prints
-            for p in service.player_list:
-                print p.name
 
         if msg.subject[:12] == 'round_result':
             # split the message into a dict of attacks
@@ -115,19 +113,17 @@ def on_mouse_press(canvas, mouse):
 def on_key_press(canvas, keyboard):
     pass
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     layout = LayoutHelper()
     service = ClientService()
     network = NetworkingClient(service.domain)
     con = network.connect()
-    # TODO should inverse both con and auth so that the program stops if either is None
-    if con is not None:
-        # TODO logging
-        auth = network.authenticate(username=service.username, domain=service.domain, secret=service.secret)
-        if auth is not None:
-            # TODO logging
-            pass
-    network.send_message(to=service.server_jid, sender=service.jid, message="", subject="register")
+    if con is None:
+        raise RuntimeError('Can\'t connect to the network')
+    auth = network.authenticate(username=service.username, domain=service.domain, secret=service.secret)
+    if auth is None:
+        raise RuntimeError('Can\'t authenticate with given username and password')
+    network.send_message(to=service.server_jid, sender=service.jid, message=str(service.version), subject="register")
 
     canvas.on_key_press = on_key_press
     canvas.on_mouse_press = on_mouse_press

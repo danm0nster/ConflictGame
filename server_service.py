@@ -1,20 +1,49 @@
-from player import Player
+# -*- coding: utf-8 -*-
 from client_service import ClientService
 from time import time
 from scipy.linalg import eig
+from database_manager import DatabaseManager
 import numpy
 
 
 class ServerService(ClientService):
     def __init__(self):
         super(ServerService, self).__init__()
-        self.database = self.DatabaseManager()
-        self.username = "server"
+        self.database = DatabaseManager()
+        self._USERNAME = "server"
+        self._DOMAIN = 'YLGW036484'
+        self._SECRET = "1234"
         self._attack_dict = {}
         self._aggression_matrix = None
         self._cumulative_matrix = None
         self._transition_matrix = None
         self._eigen_vector = None
+        self.server_version = 0.5
+        self.experimental_round = 1
+        self.round_number = 1
+
+    def start_experimental_session(self, template, location, experimenter_name):
+        self.database.start_experimental_session(template, location, experimenter_name)
+
+    def start_game_phase(self):
+        self.database.start_new_game_phase()
+
+    def end_game_phase(self):
+        self.database.end_game_phase()
+
+    def save_attacks(self, round_number):
+        jid_attack_dict = {}
+        for key in self._attack_dict:
+            attacker = key.name
+            defender = self._attack_dict[key].name
+            jid_attack_dict[attacker] = defender
+        self.database.insert_attacks(jid_attack_dict, round_number)
+
+    def insert_session(self, experimental_round, game_phase=None, information=None, questionnaire=None):
+        self.database.insert_session_order(experimental_round, game_phase, information, questionnaire)
+
+    def register_jids(self):
+        self.database.register_jabber_ids(self.player_list)
 
     def add_attack(self, player0, player1):
         # Only add the attack if that player doesn't have a registered attack yet
@@ -28,8 +57,9 @@ class ServerService(ClientService):
         self._eigen_vector = self.get_eigen_vector_from_largest_eigen_value(self._transition_matrix)
         # TODO remove test print
         print self._eigen_vector
-        # TODO add data saving, temporarily will just clean that dict
+        self.save_attacks(self.round_number)
         self._attack_dict = {}
+        self.round_number = self.round_number + 1
 
     def player_name_list(self):
         name_list = []
@@ -85,7 +115,7 @@ class ServerService(ClientService):
                         found = True
                 # attacker goes to the x and defender to the y
                 temp_array[attacker][defender] = 1
-                # next 2 statements is not needed, but will show if there is an error
+                # clears attacker and defender for next iteration
                 attacker = None
                 defender = None
         return temp_array
@@ -131,26 +161,3 @@ class ServerService(ClientService):
                 distance_from_0 = abs(eigen_values[index])
 
         return eigen_vectors[largest_eigen_index]
-
-    class DatabaseManager(object):
-        def __init__(self):
-            try:
-                db_file = open('db_settings.ini', 'r')
-                lines = db_file.readlines()
-                # for each relevant line, it checks it the formatting is appropriate
-                # it does this by sub stringing the line and checking the value vs the expected value
-                # if it's wrong it raises an exception saying that the db_settings file is malformed
-                if lines[0][:5] != 'user=':
-                    raise IOError('db_settings malformed')
-                if lines[1][:9] != 'password=':
-                    raise IOError('db_settings malformed')
-                if lines[2][:3] != 'db=':
-                    raise IOError('db_settings malformed')
-                # initiates variables to the values in the settings file
-                self.user = lines[0][5:]
-                self.secret = lines[1][9:]
-                self.db = lines[2][3:]
-            except IOError:
-                # TODO message informing user that it can't connect to the database
-                pass
-
