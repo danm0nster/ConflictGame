@@ -1,0 +1,16 @@
+$ cat .gitignore
+.idea
+*.pyc
+.project
+.pydevproject
+*.ini
+NetworkingClient.py
+testlol.py
+dbtest.py
+/docs
+/sphinx-docs
+/nodebox
+/pyglet
+/xmpp
+/numpy
+/pymysql
