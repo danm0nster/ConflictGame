@@ -6,14 +6,13 @@ import math
 class LayoutHelper:
     def __init__(self, edge_margin=50.0, right_margin=200.0):
         # right margin for timer, expected payout and text, this makes "the main window" smaller by same amount
-        # TODO might need to be a calculated thing, but 200px for now
         self.right_margin = right_margin
         # margin from edges in px
         self.edge_margin = edge_margin
         self.counter = 0
 
     def draw_right_margin(self):
-        """ Draws the right margin of th screen
+        """ Draws the right margin of the screen
 
         The right margin is used for information, this method draws the divider
 
@@ -85,18 +84,15 @@ class LayoutHelper:
 
         # drawing the borders
         push()
-        # TODO make it more clear
         translate(canvas.width - self.right_margin + padding, self.edge_margin)
         stroke(0, 1)
         nofill()
         strokewidth(2)
-        # TODO insert height instead of 10
         rect(0, 0, length, 10)
         pop()
 
         # drawing elapsed bar
         push()
-        # TODO insert height
         img = Image('pictures/red.png', x=canvas.width - self.right_margin + padding+1, y=self.edge_margin+1,
                     width=elapsed_length-1, height=8, data=None)
         image(img)
@@ -220,7 +216,6 @@ class LayoutHelper:
         pop()
 
     def draw_start_stop_button(self, caption, action=None, padding=10):
-        # TODO lav generisk
         """ Draws the start/stop button to the screen
 
         Args:
@@ -238,7 +233,6 @@ class LayoutHelper:
         canvas.append(button)
 
     def change_start_stop_text(self, value):
-        # TODO lav generisk
         """ Changes the caption on the start/stop button
 
         Args:

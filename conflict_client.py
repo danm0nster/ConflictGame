@@ -8,6 +8,13 @@ from time import time, sleep
 
 
 def draw(canvas):
+    """The method used by Nodebox to draw to the screen
+
+    This method is called by canvas will be run a number of times pr second
+    equal to the fps that has been set.
+    If the computer is not powerful enough it will be runned as many times as possible
+    each second.
+    """
     # Checks for network messages and handles them
     if network.check_for_messages():
         message_handler()
@@ -57,6 +64,11 @@ def draw(canvas):
 
 
 def message_handler():
+    """Handles network messages
+
+    This method handles messages from the network layer and removes them
+    after responding to them.
+    """
     msg = network.pop_message()
     while msg is not None:
         if msg.subject[:5] == 'start':
@@ -91,6 +103,16 @@ def message_handler():
 
 
 def on_mouse_press(canvas, mouse):
+    """ Handles mouse press
+
+    This method handles mouse presses during run time
+    If a legal player is clicked it will set the users attack to that player
+    otherwise it does nothing
+
+    Args:
+        canvas(canvas): global canvas variable provided by nodebox library
+        mouse(mouse): mouse variable provided by nodebox library
+    """
     # finds what player was clicked
     for player in service.player_list:
         if player.position[0] <= mouse.x <= (player.position[0] + player.img.width):
@@ -111,6 +133,10 @@ def on_mouse_press(canvas, mouse):
 
 
 def on_key_press(canvas, keyboard):
+    """Method to handle keyboard presses during run time
+
+    Currently does nothing on keypress
+    """
     pass
 
 if __name__ == '__main__':

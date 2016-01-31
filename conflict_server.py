@@ -8,6 +8,13 @@ from player import Player
 
 
 def draw(canvas):
+    """The method used by Nodebox to draw to the screen
+
+    This method is called by canvas will be run a number of times pr second
+    equal to the fps that has been set.
+    If the computer is not powerful enough it will be runned as many times as possible
+    each second.
+    """
     # Checks for network messages and handles them
     if network.check_for_messages():
         message_handler()
@@ -39,6 +46,11 @@ def draw(canvas):
 
 
 def message_handler():
+    """Handles network messages
+
+    This method handles messages from the network layer and removes them
+    after responding to them.
+    """
     msg = network.pop_message()
     while msg is not None:
         # new player registers
@@ -59,6 +71,11 @@ def message_handler():
 
 
 def start_stop_button_action(button):
+    """handles mouse presses on the start/stop button
+
+    If the game is stopped it will start the game and change the label of the button
+    If the game is started it will stop the current game and change the label of the button
+    """
     # first it changes if it's started or not
     service.started = not service.started
     # Then takes appropriate actions

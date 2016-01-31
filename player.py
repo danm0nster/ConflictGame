@@ -10,6 +10,14 @@ class Player:
                     width=50, height=50, data=None)
 
     def draw_self(self, highlight=False):
+        """Draws itself to the canvas
+
+        Draws the player to the screen
+        Optionally can be highlighted by a box around the player
+
+        Args:
+            highlight(boolean): Defaults to false, whether it should be highlighted or not
+        """
         push()
         if highlight:
             # the +1's are due to the increased strokewidth

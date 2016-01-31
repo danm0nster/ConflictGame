@@ -42,7 +42,7 @@ class ClientService(object):
 
     @property
     def server_jid(self):
-        return self.server_name + "@" + self.domain
+        return self.server_name + "@" + self.domain.lower()
 
     @property
     def secret(self):
@@ -52,7 +52,6 @@ class ClientService(object):
     def server_name(self):
         return self._SERVER_NAME
 
-    # TODO not sure servername should have a setter
     @server_name.setter
     def server_name(self, server_name):
         self._SERVER_NAME = server_name
@@ -80,7 +79,6 @@ class ClientService(object):
 
         """
         # reset timer if game is not started
-        # TODO tjek om et virker hvis return type altid er float
         if not self.started:
             self.timestamp = None
             return 0

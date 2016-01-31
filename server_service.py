@@ -10,9 +10,9 @@ class ServerService(ClientService):
     def __init__(self):
         super(ServerService, self).__init__()
         self.database = DatabaseManager()
-        self._USERNAME = "server"
+        self._USERNAME = 'server'
         self._DOMAIN = 'YLGW036484'
-        self._SECRET = "1234"
+        self._SECRET = '1234'
         self._attack_dict = {}
         self._aggression_matrix = None
         self._cumulative_matrix = None
@@ -93,7 +93,6 @@ class ServerService(ClientService):
 
     def generate_aggression_matrix(self):
         # TODO poor performance for now, look into this
-        # O(n^3) ouch, you can do better than this, but make the rest work first
         # makes an array the size of self.player_list fills it with 0's
         temp_array = [0] * len(self.player_list)
         # then every entry in the array will be changed to a new array filled with zeroes
